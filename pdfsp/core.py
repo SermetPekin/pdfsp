@@ -66,6 +66,9 @@ def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
         out = Path(".")
 
     files = [x for x in os.listdir() if x.endswith(".pdf")]
+    if not files:
+        print(f"No PDF files found in {folder}")
+        return []
     return files
 
 

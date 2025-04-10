@@ -6,7 +6,8 @@ description = "Extracts data from PDF files and saves it to Excel files."
 authors = [
     { name = "Sermet Pekin", email = "Sermet.Pekin@gmail.com" }
 ]
-license = { file = "LICENSE" }
+license = { text = "EUPL-1.2" }
+
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -17,7 +18,12 @@ dependencies = [
 ]
 [project.urls]
 repository = "https://github.com/SermetPekin/pdfsp"
+[tool.setuptools]
+license-files = ["LICENSE"]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -27,3 +33,6 @@ dev = [
     "pytest>=8.3.5",
     "tox>=4.25.0",
 ]
+
+[project.scripts]
+pdfsp = "pdfsp.cli:console_extract_tables"
