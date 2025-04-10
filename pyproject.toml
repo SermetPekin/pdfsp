@@ -2,7 +2,11 @@
 [project]
 name = "pdfsp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Extracts data from PDF files and saves it to Excel files."
+authors = [
+    { name = "Sermet Pekin", email = "Sermet.Pekin@gmail.com" }
+]
+license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -11,5 +15,9 @@ dependencies = [
     "pdfplumber>=0.11.6",
     "streamlit>=1.44.1",
 ]
+[project.urls]
+repository = "https://github.com/SermetPekin/pdfsp"
+
+
 [tool.setuptools.packages.find]
 where = ["."]

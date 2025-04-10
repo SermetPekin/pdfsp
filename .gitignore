@@ -1,0 +1,17 @@
+ignore*.*
+ignore*/
+__pycache__/
+*.pyc 
+.venv/
+build/
+dist/
+*.egg-info/
+*.egg
+*.log
+*.sqlite3
+*.db
+*.pdb
+*.DS_Store
+
+*.xlsx
+
