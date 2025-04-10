@@ -1,0 +1,15 @@
+
+[project]
+name = "pdfsp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "pdfplumber>=0.11.6",
+    "streamlit>=1.44.1",
+]
+[tool.setuptools.packages.find]
+where = ["."]
