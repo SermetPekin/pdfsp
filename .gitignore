@@ -14,4 +14,7 @@ dist/
 *.DS_Store
 
 *.xlsx
+output/
+*.csv
+*.json
 

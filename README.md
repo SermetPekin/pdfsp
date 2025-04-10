@@ -17,8 +17,19 @@
 
 ## 📦 Installation
 
-Make sure you're using **Python 3.13 or newer**, then install with:
+Make sure you're using **Python 3.10 or newer**, then install with:
 
 ```bash
-pip install git+https://github.com/SermetPekin/pdfsp.git
+pip install pdfsp
+```
+
+```python
+
+from pdfsp import extract_tables
+
+source_folder = "."
+output_folder = "output"
+
+extract_tables(source_folder, output_folder )
+
 ```

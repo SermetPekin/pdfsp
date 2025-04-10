@@ -8,7 +8,7 @@ authors = [
 ]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
@@ -21,3 +21,9 @@ repository = "https://github.com/SermetPekin/pdfsp"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "tox>=4.25.0",
+]

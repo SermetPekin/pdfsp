@@ -3,12 +3,13 @@ import pandas as pd
 from dataclasses import dataclass
 import traceback
 import os
-
 from pathlib import Path
 
 
 @dataclass
 class DataFrame:
+    """A class to handle DataFrame operations."""
+
     df: pd.DataFrame
     extra: tuple
     out: str = None
@@ -19,12 +20,12 @@ class DataFrame:
         self.out = Path(self.out)
         self.df = self.make_unique_cols(self.df)
 
-    def make_unique_cols(self, df):
+    def make_unique_cols(self, df: pd.DataFrame) -> pd.DataFrame:
         cols = [str(x) for x in df.columns]
         df.columns = self.make_unique(cols)
         return df
 
-    def make_unique(self, cols):
+    def make_unique(self, cols: list[str]) -> list[str]:
         a = []
         b = []
         for i, col in enumerate(cols):
@@ -39,7 +40,7 @@ class DataFrame:
 
         return b
 
-    def write(self, *args):
+    def write(self, *args) -> None:
 
         os.makedirs(self.out, exist_ok=True)
 
@@ -57,7 +58,8 @@ class DataFrame:
             traceback.print_exc()
 
 
-def get_pdf_files(folder: Path = None, out: str = None):
+def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
+    """Get all PDF files in the specified folder."""
     if folder is None:
         folder = Path(".")
     if out is None:
@@ -68,40 +70,34 @@ def get_pdf_files(folder: Path = None, out: str = None):
 
 
 def extract_tables_from_pdf(pdf_path, out: Path = None) -> list[DataFrame]:
-
+    """Extract tables from a PDF file."""
     pdfs = []
-    # Open the PDF file
     with pdfplumber.open(pdf_path) as pdf:
         print(f"""Extracting tables from {pdf_path}""")
 
         name = str(pdf_path).split(".")[0]
 
-        for page_number, page in enumerate(pdf.pages, start=1):
-            # Extract tables on the current page
+        for _, page in enumerate(pdf.pages, start=1):
             tables = page.extract_tables()
 
-            for idx, table in enumerate(tables):
-                # Convert table (list of lists) to a Pandas DataFrame
-                df = pd.DataFrame(
-                    table[1:], columns=table[0]
-                )  # Use the first row as header
+            for _, table in enumerate(tables):
+                df = pd.DataFrame(table[1:], columns=table[0])
 
                 pdfs.append(DataFrame(df, (name,), out))
     return pdfs
 
 
-def write_dfs(pdf_paths, out=None):
-
+def write_dfs(pdf_paths: list[Path], out: Path = None):
+    """Write DataFrames to Excel files."""
     for pdf_path in pdf_paths:
-        a = extract_tables_from_pdf(pdf_path, out)
-        for i, df in enumerate(a):
+        pdfs: list[DataFrame] = extract_tables_from_pdf(pdf_path, out)
+        for i, df in enumerate(pdfs):
             df.write(i + 1)
 
 
 def extract_tables(folder: Path = None, out: str = None):
-
+    """Extract tables from all PDF files in the specified folder."""
     files = get_pdf_files(folder, out)
-
     write_dfs(files, out)
 
 
