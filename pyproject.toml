@@ -1,7 +1,7 @@
 
 [project]
 name = "pdfsp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Extracts data from PDF files and saves it to Excel files."
 authors = [
     { name = "Sermet Pekin", email = "Sermet.Pekin@gmail.com" }
@@ -31,6 +31,7 @@ where = ["."]
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "ruff>=0.11.5",
     "tox>=4.25.0",
 ]
 
