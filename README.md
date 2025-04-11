@@ -40,8 +40,17 @@ extract_tables(source_folder, output_folder )
 ### From console 
 
 ```bash 
+# all tables from all pdf files in the current folder to current folder 
 pdfsp . . 
-
+# all tables from all pdf files in someFolder to current SomeOutFolder 
 pdfsp someFolder SomeOutFolder 
+
+
+# all tables of some.pdf to the current folder 
+pdfsp some.pdf .
+
+# all tables of some.pdf to the toThisFolder folder 
+pdfsp some.pdf toThisFolder
+
 
 ```
