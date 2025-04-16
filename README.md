@@ -25,9 +25,9 @@ pip install pdfsp
 
 
 
-
+### python script 
 ```python
-
+# pdf.py 
 from pdfsp import extract_tables
 
 source_folder = "."
@@ -37,7 +37,7 @@ extract_tables(source_folder, output_folder )
 
 ```
 
-### From console 
+### From console / Terminal / Command Line 
 
 ```bash 
 # all tables from all pdf files in the current folder to current folder 
@@ -51,8 +51,6 @@ pdfsp some.pdf .
 
 # all tables of some.pdf to the toThisFolder folder 
 pdfsp some.pdf toThisFolder
-
-
 
 ```
 
