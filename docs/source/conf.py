@@ -11,8 +11,8 @@ import os
 
 html_build_dir = "../docs"  # Directory for HTML build output
 
-project = "eseas"
-copyright = "2024, Sermet Pekin"
+project = "pdfsp"
+copyright = "2025, Sermet Pekin"
 author = "Sermet Pekin"
 
 # The short X.Y version
