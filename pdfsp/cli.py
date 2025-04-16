@@ -22,10 +22,12 @@
 
 from pdfsp.core import extract_tables, write_dfs
 import sys
+
 def console_router(source_folder, output_folder):
     if str(source_folder).endswith(".pdf"):
         return write_dfs([source_folder], output_folder)
     return extract_tables(source_folder, output_folder)
+
 def console_extract_tables():
     if len(sys.argv) > 2:
         source_folder = sys.argv[1]

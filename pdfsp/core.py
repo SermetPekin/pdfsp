@@ -23,9 +23,9 @@ from dataclasses import dataclass
 import traceback
 import os
 from pathlib import Path
+
 @dataclass
 class DataFrame:
-    """A class to handle DataFrame operations."""
     df: pd.DataFrame
     path: Path
     out: str = None
@@ -53,19 +53,13 @@ class DataFrame:
             a.append(col)
             b.append(ucol)
         return b
-    def get_file_name(self):
-        file_name = f"[{self.name}]-{self.index}.xlsx"
-        return file_name
-    def write2(self) -> None:
-        self.create_dir()
-        file_name = self.get_file_name()
-        try:
-            self.df.to_excel(self.out / file_name, index=False)
-            print(f"[writing table] {file_name}")
-        except Exception:
-            traceback.print_exc()
-    def create_dir(self):
+    
+    def get_file_name(self)-> str:
+        return  f"[{self.name}]-{self.index}.xlsx"
+    
+    def create_dir(self)-> None:
         os.makedirs(self.out, exist_ok=True)
+    
     def write(self):
         from openpyxl import Workbook
         from openpyxl.utils.dataframe import dataframe_to_rows
@@ -75,24 +69,21 @@ class DataFrame:
         ws = wb.active
         title = f"{self.name}-Table-{self.index}"
         ws.title = title
-        # Write the DataFrame to the worksheet
         for r_idx, row in enumerate(
             dataframe_to_rows(self.df, index=False, header=True), start=1
         ):
             ws.append(row)
-        # Add a footnote below the table
-        footnote_row = len(self.df) + 4  # Position below the DataFrame
+        footnote_row = len(self.df) + 4  
         ws.cell(row=footnote_row, column=1, value=f"Footnote: {title} ")
-        # Add a paragraph (multi-line text)
-        paragraph_row = footnote_row + 4  # Position below the footnote
+        paragraph_row = footnote_row + 4 
         ws.cell(
             row=paragraph_row,
             column=1,
             value=f"This table was extracted from {self.path} with pdfsp package.",
         )
-        # Save the workbook
         wb.save(self.out / file_name)
         print(f"[writing table] {file_name}")
+
 def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
     """Get all PDF files in the specified folder."""
     if folder is None:
@@ -104,6 +95,7 @@ def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
         print(f"No PDF files found in {folder}")
         return []
     return files
+
 def extract_tables_from_pdf(pdf_path, out: Path = None) -> list[DataFrame]:
     """Extract tables from a PDF file."""
     pdfs = []
@@ -121,13 +113,8 @@ def write_dfs(pdf_files: list[Path], out: Path = None):
         pdfs: list[DataFrame] = extract_tables_from_pdf(pdf_file, out)
         for df in pdfs:
             df.write()
+
 def extract_tables(folder: Path = None, out: str = None):
     """Extract tables from all PDF files in the specified folder."""
     files = get_pdf_files(folder, out)
     write_dfs(files, out)
-# ........................................ main
-# ........................................
-# pdf_paths = ["aa.pdf", "bb.pdf"]
-# write_dfs(pdf_paths)
-# ........................................
-# write_tables_folder(".", "a3")
