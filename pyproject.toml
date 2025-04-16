@@ -17,7 +17,9 @@ dependencies = [
     "streamlit>=1.44.1",
 ]
 [project.urls]
-repository = "https://github.com/SermetPekin/pdfsp"
+Repository = "https://github.com/SermetPekin/pdfsp"
+Documentation = "https://pdfsp.readthedocs.io/en/latest/home.html"
+
 [tool.setuptools]
 license-files = ["LICENSE"]
 
