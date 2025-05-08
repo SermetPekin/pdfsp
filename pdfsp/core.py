@@ -1,4 +1,3 @@
-
 # This file is part of the pdfsp project
 # Copyright (C) 2025 Sermet Pekin
 #
@@ -24,6 +23,7 @@ import traceback
 import os
 from pathlib import Path
 
+
 @dataclass
 class DataFrame:
     df: pd.DataFrame
@@ -32,16 +32,19 @@ class DataFrame:
     index: int = 1
     extra: tuple = ()
     name: str = ""
+
     def __post_init__(self):
         if self.out is None:
             self.out = "Output"
         self.out = Path(self.out)
         self.df = self.make_unique_cols(self.df)
         self.name = Path(self.path).stem.split(".pdf")[0]
+
     def make_unique_cols(self, df: pd.DataFrame) -> pd.DataFrame:
         cols = [str(x) for x in df.columns]
         df.columns = self.make_unique(cols)
         return df
+
     def make_unique(self, cols: list[str]) -> list[str]:
         a = []
         b = []
@@ -53,16 +56,17 @@ class DataFrame:
             a.append(col)
             b.append(ucol)
         return b
-    
-    def get_file_name(self)-> str:
-        return  f"[{self.name}]-{self.index}.xlsx"
-    
-    def create_dir(self)-> None:
+
+    def get_file_name(self) -> str:
+        return f"[{self.name}]-{self.index}.xlsx"
+
+    def create_dir(self) -> None:
         os.makedirs(self.out, exist_ok=True)
-    
+
     def write(self):
         from openpyxl import Workbook
         from openpyxl.utils.dataframe import dataframe_to_rows
+
         self.create_dir()
         file_name = self.get_file_name()
         wb = Workbook()
@@ -73,9 +77,9 @@ class DataFrame:
             dataframe_to_rows(self.df, index=False, header=True), start=1
         ):
             ws.append(row)
-        footnote_row = len(self.df) + 4  
+        footnote_row = len(self.df) + 4
         ws.cell(row=footnote_row, column=1, value=f"Footnote: {title} ")
-        paragraph_row = footnote_row + 4 
+        paragraph_row = footnote_row + 4
         ws.cell(
             row=paragraph_row,
             column=1,
@@ -84,35 +88,43 @@ class DataFrame:
         wb.save(self.out / file_name)
         print(f"[writing table] {file_name}")
 
+
 def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
     """Get all PDF files in the specified folder."""
     if folder is None:
         folder = Path(".")
     if out is None:
         out = Path(".")
-    files = [x for x in os.listdir() if x.endswith(".pdf")]
+
+    files = [x for x in os.listdir(folder) if x.endswith(".pdf")]
     if not files:
         print(f"No PDF files found in {folder}")
         return []
     return files
+
 
 def extract_tables_from_pdf(pdf_path, out: Path = None) -> list[DataFrame]:
     """Extract tables from a PDF file."""
     pdfs = []
     with pdfplumber.open(pdf_path) as pdf:
         print(f"""Extracting tables from {pdf_path}""")
-        for _, page in enumerate(pdf.pages, start=1):
+        for i, page in enumerate(pdf.pages, start=1):
+
             tables = page.extract_tables()
             for index, table in enumerate(tables):
                 df = pd.DataFrame(table[1:], columns=table[0])
-                pdfs.append(DataFrame(df, pdf_path, out, index=index + 1))
+
+                pdfs.append(DataFrame(df, pdf_path, out, index=i * 10 + index + 1))
     return pdfs
+
+
 def write_dfs(pdf_files: list[Path], out: Path = None):
     """Write DataFrames to Excel files."""
     for pdf_file in pdf_files:
         pdfs: list[DataFrame] = extract_tables_from_pdf(pdf_file, out)
         for df in pdfs:
             df.write()
+
 
 def extract_tables(folder: Path = None, out: str = None):
     """Extract tables from all PDF files in the specified folder."""
