@@ -29,6 +29,7 @@ class DataFrame:
     df: pd.DataFrame
     path: Path
     out: str = None
+    page: int = 1
     index: int = 1
     extra: tuple = ()
     name: str = ""
@@ -58,7 +59,7 @@ class DataFrame:
         return b
 
     def get_file_name(self) -> str:
-        return f"[{self.name}]-{self.index}.xlsx"
+        return f"[{self.name}]-Page {self.page}-T {self.index}.xlsx"
 
     def create_dir(self) -> None:
         os.makedirs(self.out, exist_ok=True)
@@ -89,6 +90,18 @@ class DataFrame:
         print(f"[writing table] {file_name}")
 
 
+def check_folder(folder: Path) -> bool:
+    """Check if the folder exists and is a directory."""
+    folder = Path(folder)
+    if not folder.exists():
+        print(f"Folder `{folder}` does not exist.")
+        return False
+    if not folder.is_dir():
+        print(f"`{folder}` is not a directory.")
+        return False
+    return True
+
+
 def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
     """Get all PDF files in the specified folder."""
     if folder is None:
@@ -96,37 +109,46 @@ def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
     if out is None:
         out = Path(".")
 
+    if not check_folder(folder):
+        return []
+
+    print(f"Searching for PDF files in `{folder}`")
+
     files = [Path(folder) / x for x in os.listdir(folder) if x.endswith(".pdf")]
     if not files:
-        print(f"No PDF files found in {folder}")
+        print(f"No PDF files found in `{folder}`")
         return []
+    print(f"Found {len(files)} PDF files in `{folder}`")
     return files
 
 
-def extract_tables_from_pdf(pdf_path, out: Path = None) -> list[DataFrame]:
+def extract_tables_from_pdf(pdf_path, out: Path = None) -> DataFrame:
     """Extract tables from a PDF file."""
-    pdfs = []
+
     with pdfplumber.open(pdf_path) as pdf:
-        print(f"""Extracting tables from {pdf_path}""")
+        print(f"""Extracting tables from `{pdf_path}`""")
         for i, page in enumerate(pdf.pages, start=1):
 
             tables = page.extract_tables()
             for index, table in enumerate(tables):
                 df = pd.DataFrame(table[1:], columns=table[0])
-
-                pdfs.append(DataFrame(df, pdf_path, out, index=i * 10 + index + 1))
-    return pdfs
+                yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
 
 
 def write_dfs(pdf_files: list[Path], out: Path = None):
     """Write DataFrames to Excel files."""
     for pdf_file in pdf_files:
-        pdfs: list[DataFrame] = extract_tables_from_pdf(pdf_file, out)
-        for df in pdfs:
+        for df in extract_tables_from_pdf(pdf_file, out):
+            print(f"Writing table from `{df.path}`")
             df.write()
 
 
 def extract_tables(folder: Path = None, out: str = None):
     """Extract tables from all PDF files in the specified folder."""
+    for file in get_pdf_files(folder, out):
+        pdf_ = extract_tables_from_pdf(file, out)
+        for df in pdf_:
+            df.write()
+
     files = get_pdf_files(folder, out)
     write_dfs(files, out)
