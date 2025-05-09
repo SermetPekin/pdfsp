@@ -52,4 +52,4 @@ Command line usage
     pdfsp some.pdf .
 
     # All tables of some.pdf to the toThisFolder folder 
-    pdfsp some.pdf toThisFolder
+     pdfsp some.pdf toThisFolder
