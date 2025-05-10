@@ -1,7 +1,7 @@
 
 [project]
 name = "pdfsp"
-version = "0.1.5"
+version = "0.1.6"
 description = "Extracts data from PDF files and saves it to Excel files."
 authors = [
     { name = "Sermet Pekin", email = "Sermet.Pekin@gmail.com" }
@@ -14,7 +14,7 @@ dependencies = [
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
     "pdfplumber>=0.11.6",
-    "streamlit>=1.44.1",
+    # "streamlit>=1.44.1",
 ]
 [project.urls]
 Repository = "https://github.com/SermetPekin/pdfsp"

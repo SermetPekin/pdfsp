@@ -20,7 +20,8 @@
 Make sure you're using **Python 3.10 or newer**, then install with:
 
 ```bash
-pip install pdfsp
+pip install pdfsp -U
+
 ```
 
 

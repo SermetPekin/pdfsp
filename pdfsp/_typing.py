@@ -1,5 +1,10 @@
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union,List 
 from pathlib import Path 
+from typing import Generator
+import pandas as pd
+
+T_pandas_df = pd.DataFrame
+
 
 T_Path = Union[str, Path]
 T_OptionalPath = Optional[T_Path]

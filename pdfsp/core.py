@@ -17,19 +17,18 @@
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
 import pdfplumber
-import pandas as pd
 from dataclasses import dataclass
 import traceback
 import os
-from pathlib import Path
-from ._typing import T_Path ,T_OptionalPath 
+
+from ._typing import T_Path, T_OptionalPath, Generator, Path, T_pandas_df,List 
 
 
 @dataclass
 class DataFrame:
-    df: pd.DataFrame
-    path: Path
-    out: str = None
+    df: T_pandas_df
+    path: T_Path
+    out: T_OptionalPath = None
     page: int = 1
     index: int = 1
     extra: tuple = ()
@@ -42,12 +41,12 @@ class DataFrame:
         self.df = self.make_unique_cols(self.df)
         self.name = Path(self.path).stem.split(".pdf")[0]
 
-    def make_unique_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+    def make_unique_cols(self, df: T_pandas_df) -> T_pandas_df:
         cols = [str(x) for x in df.columns]
         df.columns = self.make_unique(cols)
         return df
 
-    def make_unique(self, cols: list[str]) -> list[str]:
+    def make_unique(self, cols: List[str]) -> List[str]:
         a = []
         b = []
         for i, col in enumerate(cols):
@@ -65,7 +64,7 @@ class DataFrame:
     def create_dir(self) -> None:
         os.makedirs(self.out, exist_ok=True)
 
-    def write(self):
+    def write(self) -> None:
         from openpyxl import Workbook
         from openpyxl.utils.dataframe import dataframe_to_rows
 
@@ -103,7 +102,7 @@ def check_folder(folder: T_Path) -> bool:
     return True
 
 
-def get_pdf_files(folder: T_OptionalPath = None ) -> list[str]:
+def get_pdf_files(folder: T_OptionalPath = None) -> List[str]:
     """Get all PDF files in the specified folder."""
     if folder is None:
         folder = Path(".")
@@ -120,8 +119,9 @@ def get_pdf_files(folder: T_OptionalPath = None ) -> list[str]:
     print(f"Found {len(files)} PDF files in `{folder}`")
     return files
 
+import pandas as pd 
 
-def extract_tables_from_pdf(pdf_path, out: Path = None) -> DataFrame:
+def extract_tables_from_pdf(pdf_path, out :T_OptionalPath= None) -> Generator[DataFrame, None, None]:
     """Extract tables from a PDF file."""
 
     with pdfplumber.open(pdf_path) as pdf:
@@ -133,19 +133,13 @@ def extract_tables_from_pdf(pdf_path, out: Path = None) -> DataFrame:
                 yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
 
 
-def write_dfs(pdf_files: list[Path], out: Path = None):
-    """Write DataFrames to Excel files."""
-    for pdf_file in pdf_files:
-        for df in extract_tables_from_pdf(pdf_file, out):
-            print(f"Writing table from `{df.path}`")
-            df.write()
-
-
-def extract_tables(folder: Path = None, out: str = None):
-    """Extract tables from all PDF files in the specified folder."""
+def process_folder(folder: T_OptionalPath = None, out: T_OptionalPath = None):
     for file in get_pdf_files(folder):
         for _df in extract_tables_from_pdf(file, out):
             _df.write()
+    print("Extraction completed.")
 
-    # files = get_pdf_files(folder, out)
-    # write_dfs(files, out)
+
+def extract_tables(folder: T_OptionalPath = None, out: T_OptionalPath = None):
+    """Extract tables from all PDF files in the specified folder."""
+    process_folder(folder, out)

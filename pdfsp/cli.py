@@ -1,4 +1,3 @@
-
 # This file is part of the pdfsp project
 # Copyright (C) 2025 Sermet Pekin
 #
@@ -22,13 +21,23 @@
 
 from pdfsp.core import extract_tables, write_dfs
 import sys
+from ._typing import T_Path, T_OptionalPath
 
-def console_router(source_folder, output_folder):
+
+def console_router(
+    source_folder: T_OptionalPath = None, 
+    output_folder: T_OptionalPath = None
+):
+    """Console router"""
+
     if str(source_folder).endswith(".pdf"):
-        return write_dfs([source_folder], output_folder)
+        source_folder = [source_folder]
     return extract_tables(source_folder, output_folder)
 
+
 def console_extract_tables():
+    """Console entry point"""
+
     if len(sys.argv) > 2:
         source_folder = sys.argv[1]
         output_folder = sys.argv[2]
