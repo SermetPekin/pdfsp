@@ -22,6 +22,7 @@ from dataclasses import dataclass
 import traceback
 import os
 from pathlib import Path
+from ._typing import T_Path ,T_OptionalPath 
 
 
 @dataclass
@@ -90,7 +91,7 @@ class DataFrame:
         print(f"[writing table] {file_name}")
 
 
-def check_folder(folder: Path) -> bool:
+def check_folder(folder: T_Path) -> bool:
     """Check if the folder exists and is a directory."""
     folder = Path(folder)
     if not folder.exists():
@@ -102,12 +103,10 @@ def check_folder(folder: Path) -> bool:
     return True
 
 
-def get_pdf_files(folder: Path = None, out: str = None) -> list[str]:
+def get_pdf_files(folder: T_OptionalPath = None ) -> list[str]:
     """Get all PDF files in the specified folder."""
     if folder is None:
         folder = Path(".")
-    if out is None:
-        out = Path(".")
 
     if not check_folder(folder):
         return []
@@ -128,7 +127,6 @@ def extract_tables_from_pdf(pdf_path, out: Path = None) -> DataFrame:
     with pdfplumber.open(pdf_path) as pdf:
         print(f"""Extracting tables from `{pdf_path}`""")
         for i, page in enumerate(pdf.pages, start=1):
-
             tables = page.extract_tables()
             for index, table in enumerate(tables):
                 df = pd.DataFrame(table[1:], columns=table[0])
@@ -145,10 +143,9 @@ def write_dfs(pdf_files: list[Path], out: Path = None):
 
 def extract_tables(folder: Path = None, out: str = None):
     """Extract tables from all PDF files in the specified folder."""
-    for file in get_pdf_files(folder, out):
-        pdf_ = extract_tables_from_pdf(file, out)
-        for df in pdf_:
-            df.write()
+    for file in get_pdf_files(folder):
+        for _df in extract_tables_from_pdf(file, out):
+            _df.write()
 
-    files = get_pdf_files(folder, out)
-    write_dfs(files, out)
+    # files = get_pdf_files(folder, out)
+    # write_dfs(files, out)

@@ -23,4 +23,13 @@ def test_main():
 def test_m():
     source_folder = "."
     output_folder = "output_t"
+    extract_tables(source_folder, output_folder) 
+
+
+def test_full():
+
+    from pdfsp import extract_tables
+    source_folder = "."
+    output_folder = "ignore_output"
     extract_tables(source_folder, output_folder)
+
