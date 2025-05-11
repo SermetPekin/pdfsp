@@ -1,7 +1,7 @@
 
 [project]
 name = "pdfsp"
-version = "0.1.8"
+version = "0.1.10"
 description = "Extracts data from PDF files and saves it to Excel files."
 authors = [
     { name = "Sermet Pekin", email = "Sermet.Pekin@gmail.com" }
@@ -20,6 +20,27 @@ dependencies = [
 Repository = "https://github.com/SermetPekin/pdfsp"
 Documentation = "https://pdfsp.readthedocs.io/en/latest/home.html"
 
+
+[tool.hatch.build]
+include = ["pdfsp/**"]
+exclude = [
+    "**/tests/**",
+    "**/docs/**",
+    "**/*.log",
+    "**/*.tmp",
+    "**/*.pdf",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/*.pyo",
+    "**/*.pyd",
+    "**/*.so",
+    "**/*.dll",
+    "**/*.dylib",
+    "**/*.exe",
+    "**/*.egg-info/**"
+]
+
+
 [tool.setuptools]
 license-files = ["LICENSE"]
 
@@ -29,6 +50,10 @@ build-backend = "hatchling.build"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools.exclude-package-data]
+"*" = [ "*.pdf" , "*.log", "*.tmp", "tests/*", "docs/*" , "*.egg-info/*", "*.egg", "__pycache__/*", "*.pyc", "*.pyo", "*.pyd" , "*.so", "*.dll", "*.dylib", "*.exe", "*.o", "*.a", "*.lib", "*.obj", "*.pdb", "*.ilk", "*.idb", "*.idc", "*.ncb", "*.sdf", "*.suo", "*.user", "*.aps", "*.pch"] 
+
 
 [dependency-groups]
 dev = [

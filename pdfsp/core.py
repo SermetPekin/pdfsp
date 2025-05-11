@@ -33,6 +33,7 @@ from ._typing import (
 )
 
 from collections import Counter
+from ._options import Options
 
 
 @dataclass
@@ -120,15 +121,19 @@ class Folder(object):
 
     def __str__(self) -> str:
         return str(self.folder)
+
     def __repr__(self) -> str:
         return f"Folder({self.folder})"
+
     def __iter__(self):
         """Iterate over all files in the folder."""
         for file in self.folder.iterdir():
             if file.is_file() and file.suffix.lower() == ".pdf":
                 yield file
             else:
-                print(f"Skipping non-PDF file: {file}")
+                ...
+                # print(f"Skipping non-PDF file: {file}")
+
     def __len__(self) -> int:
         """Get the number of PDF files in the folder."""
         return len(list(self.folder.glob("*.pdf")) + list(self.folder.glob("*.PDF")))
@@ -154,18 +159,113 @@ def extract_tables_from_pdf(
     except Exception as e:
         print(f"❌ Failed to extract tables from `{pdf_path}`: {e}")
 
+from typing import List  
 
-def process_folder(
-    folder: T_OptionalPath = None, 
-    out: T_OptionalPath = None
-) -> Dict[str, Dict[str, int]]:
+def _strip_repeated_header(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove the first row if it repeats the header (common in continuation pages)."""
+    if df.empty:
+        return df
+
+    # Convert all to string to avoid type mismatches during comparison
+    header_as_list = list(map(str, df.columns))
+    first_row = list(map(str, df.iloc[0].tolist()))
+
+    if header_as_list == first_row:
+        return df.iloc[1:].reset_index(drop=True)
+    return df
+
+from typing import List
+
+def combine_tables_by_continuation(dfs: List[DataFrame]) -> List[pd.DataFrame]:
+    """
+    Merge DataFrames that belong to the same logical table
+    (identified by identical column names) and strip any
+    repeated header rows that appeared after a page break.
+    """
+    if not dfs:
+        return []
+
+    combined, current_parts = [], [_strip_repeated_header(dfs[0].df)]
+
+    for prev, nxt in zip(dfs, dfs[1:]):
+        same_header = list(prev.df.columns) == list(nxt.df.columns)
+        if same_header:
+            current_parts.append(_strip_repeated_header(nxt.df))
+        else:
+            combined.append(pd.concat(current_parts, ignore_index=True))
+            current_parts = [_strip_repeated_header(nxt.df)]
+
+    # last group
+    combined.append(pd.concat(current_parts, ignore_index=True  ))
+    return combined
+
+
+def write_combined_tables(dfs: List[DataFrame], pdf_path: T_Path, out: T_OptionalPath = None) -> None:
+    """Write combined tables to separate Excel files."""
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows
+
+    out = Path(out or ".")
+    out.mkdir(exist_ok=True)
+
+    combined_tables = combine_tables_by_continuation(dfs)
+
+    for idx, combined_df in enumerate(combined_tables, start=1):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"Table {idx}"
+
+        for row in dataframe_to_rows(combined_df, index=False, header=True):
+            ws.append(row)
+
+        file_name = f"{Path(pdf_path).stem}-Table-{idx}.xlsx"
+        wb.save(out / file_name)
+        print(f"[writing combined table] {file_name}")
+
+
+
+def process_folder_combine(options: Options) -> Dict[str, Dict[str, int]]:
+    """
+    Process all PDF files in a folder and return a report of successes, 
+    failures, and the number of combined tables extracted per file.
+    """
+    report = {"success": {}, "failed": []}  # success: filename → table_count
+    _folder = Folder(options.source_folder)
+
+    for file in _folder:
+        dfs = []
+        try:
+            for _df in extract_tables_from_pdf(file, options.output_folder):
+                if _df:
+                    dfs.append(_df)
+        except Exception as e:
+            print(f"❌ Error processing `{file}`: {e}")
+            report["failed"].append(str(file))
+            continue
+
+        if dfs:
+            combined_tables = combine_tables_by_continuation(dfs)
+            write_combined_tables(dfs, file, options.output_folder)
+            report["success"][str(file)] = len(combined_tables)
+        else:
+            print(f"⚠️ No tables found in `{file}`")
+            report["failed"].append(str(file))
+
+    print_summary_report(report)
+    return report
+
+
+
+def process_folder(options: Options) -> Dict[str, Dict[str, int]]:
     """Process all PDF files in a folder and return a report of successes, failures, and extracted table counts."""
+    if options.combine:
+        return process_folder_combine(options)
     report = {"success": {}, "failed": []}  # filename: table_count
-    _folder = Folder(folder)
-    for file in _folder : 
+    _folder = Folder(options.source_folder)
+    for file in _folder:
         table_count = 0
         try:
-            for _df in extract_tables_from_pdf(file, out):
+            for _df in extract_tables_from_pdf(file, options.output_folder):
                 if _df:
                     _df.write()
                     table_count += 1
@@ -203,7 +303,7 @@ def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
         print("\n⚠️ Some files failed to process. See details above.")
 
 
-def extract_tables(folder: T_OptionalPath = None, out: T_OptionalPath = None):
+def extract_tables(options: Options) -> None:
     """Extract tables from all PDF files in the specified folder."""
-    process_folder(folder, out)
+    process_folder(options)
     print("Extraction completed.")

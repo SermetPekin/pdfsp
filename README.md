@@ -28,30 +28,44 @@ pip install pdfsp -U
 
 ### python script 
 ```python
-# pdf.py 
-from pdfsp import extract_tables
+# pdf.py
+from pdfsp import extract_tables, Options
 
+# Define extraction options
 source_folder = "."
 output_folder = "output"
+combine_tables = True
 
-extract_tables(source_folder, output_folder )
+options = Options(
+    source_folder=source_folder,
+    output_folder=output_folder,
+    combine=combine_tables
+)
+
+# Run the table extraction
+extract_tables(options)
+
 
 ```
 
 ### From console / Terminal / Command Line 
 
 ```bash 
-# all tables from all pdf files in the current folder to current folder 
-pdfsp . . 
-# all tables from all pdf files in someFolder to current SomeOutFolder 
-pdfsp someFolder SomeOutFolder 
+# Extract all tables from all PDF files in the current folder and save them to the current folder
+pdfsp . .
 
+# Extract and COMBINE big tables (spanning multiple pages) into single files, saved to the current folder
+pdfsp . . --combine
 
-# all tables of some.pdf to the current folder 
+# Extract all tables from PDF files in 'someFolder' and save them to 'SomeOutFolder'
+pdfsp someFolder SomeOutFolder
+
+# Extract all tables from 'some.pdf' and save them to the current folder
 pdfsp some.pdf .
 
-# all tables of some.pdf to the toThisFolder folder 
+# Extract all tables from 'some.pdf' and save them to 'toThisFolder'
 pdfsp some.pdf toThisFolder
+
 
 ```
 

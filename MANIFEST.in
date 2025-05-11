@@ -1,0 +1,5 @@
+exclude *.pyc
+exclude *.log
+exclude *.pdf
+prune tests
+prune docs

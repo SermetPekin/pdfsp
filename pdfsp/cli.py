@@ -21,29 +21,32 @@
 
 from pdfsp.core import extract_tables
 import sys
-from ._typing import T_OptionalPath
+from ._typing import T_OptionalPath,Path 
+from ._options import Options  
 
 
-def console_router(
-    source_folder: T_OptionalPath = None, output_folder: T_OptionalPath = None
-):
-    """Console router"""
 
-    if str(source_folder).endswith(".pdf"):
-        source_folder = [source_folder]
-    return extract_tables(source_folder, output_folder)
+
 
 
 def console_extract_tables():
-    """Console entry point"""
+    """Entry point for command-line interface."""
+    args = sys.argv[1:]   
+    combine = False
 
-    if len(sys.argv) > 2:
-        source_folder = sys.argv[1]
-        output_folder = sys.argv[2]
-    elif len(sys.argv) > 1:
-        source_folder = sys.argv[1]
-        output_folder = None
-    elif len(sys.argv) == 1:
-        source_folder = "."
-        output_folder = None
-    console_router(source_folder, output_folder)
+    if "--combine" in args:
+        combine = True
+        args.remove("--combine") 
+
+    if len(args) >= 2:
+        source = args[0]
+        output = args[1]
+    elif len(args) == 1:
+        source = args[0]
+        output = None
+    else:
+        source = "."
+        output = None
+
+    options = Options(source_folder=source, output_folder=output, combine=combine)
+    extract_tables(options)

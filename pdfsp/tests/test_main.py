@@ -16,22 +16,28 @@
 #
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
-from pdfsp import extract_tables
+from pdfsp import extract_tables, Options
 
 
-
-
-def test_m():
-    source_folder = "."
-    output_folder = "output_t"
-    extract_tables(source_folder, output_folder)
 
 
 def test_full(capsys):
 
     from pdfsp import extract_tables
+
     with capsys.disabled():
         source_folder = "."
         output_folder = "output_t"
-        extract_tables(source_folder, output_folder)
+        options = Options(source_folder=source_folder, output_folder=output_folder)
 
+        extract_tables(options)
+def test_full_combine(capsys):
+
+    from pdfsp import extract_tables
+
+    with capsys.disabled():
+        source_folder = "."
+        output_folder = "output_t"
+        options = Options(source_folder=source_folder, output_folder=output_folder , combine=True)
+
+        extract_tables(options)

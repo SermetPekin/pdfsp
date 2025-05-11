@@ -29,27 +29,38 @@ Python script
 
 .. code-block:: python
 
-    # pdf.py 
-    from pdfsp import extract_tables
+    from pdfsp import extract_tables, Options
 
+    # Define extraction options
     source_folder = "."
     output_folder = "output"
+    combine_tables = True
 
-    extract_tables(source_folder, output_folder)
+    options = Options(
+        source_folder=source_folder,
+        output_folder=output_folder,
+        combine=combine_tables
+    )
+
+    # Run the table extraction
+    extract_tables(options)
 
 Command line usage
 ^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    # All tables from all PDF files in the current folder to current folder 
+    # Extract all tables from all PDF files in the current folder and save them to the current folder
     pdfsp . .
 
-    # All tables from all PDF files in someFolder to current SomeOutFolder 
-    pdfsp someFolder SomeOutFolder 
+    # Extract and COMBINE big tables (spanning multiple pages) into single files, saved to the current folder
+    pdfsp . . --combine
 
-    # All tables of some.pdf to the current folder 
+    # Extract all tables from PDF files in 'someFolder' and save them to 'SomeOutFolder'
+    pdfsp someFolder SomeOutFolder
+
+    # Extract all tables from 'some.pdf' and save them to the current folder
     pdfsp some.pdf .
 
-    # All tables of some.pdf to the toThisFolder folder 
-     pdfsp some.pdf toThisFolder
+    # Extract all tables from 'some.pdf' and save them to 'toThisFolder'
+    pdfsp some.pdf toThisFolder

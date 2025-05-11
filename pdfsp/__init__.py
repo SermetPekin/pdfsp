@@ -16,9 +16,12 @@
 #
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
-from .core import extract_tables, extract_tables_from_pdf
+from .core import extract_tables, extract_tables_from_pdf 
+from ._options import Options  
+
 
 __all__ = [
     "extract_tables",
     "extract_tables_from_pdf",
+    "Options" ,
 ]
