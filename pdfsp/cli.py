@@ -21,16 +21,7 @@
 
 from pdfsp.core import extract_tables
 import sys
-from ._typing import T_OptionalPath, Path
 from ._options import Options
-
-
-from pathlib import Path
-from urllib.parse import urlparse
-
-def is_url(path_or_url):
-    parsed = urlparse(str(path_or_url))
-    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
 def console_extract_tables():
@@ -62,15 +53,11 @@ def console_extract_tables():
         source = "."
         output = None
 
-
-    # if is_url(source):
-    #     source = Path(source)
-
     options = Options(
-        source_folder=source, 
-        output_folder=output, 
-        combine=combine, 
-        skiprows=skiprows
-        source_folder_raw = source
+        source_folder=source,
+        output_folder=output,
+        combine=combine,
+        skiprows=skiprows,
+        source_folder_raw=source,
     )
     extract_tables(options)

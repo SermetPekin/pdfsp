@@ -19,11 +19,7 @@
 from pdfsp import extract_tables, Options
 
 
-
-
 def test_full(capsys):
-
-    from pdfsp import extract_tables
 
     with capsys.disabled():
         source_folder = "."
@@ -31,13 +27,15 @@ def test_full(capsys):
         options = Options(source_folder=source_folder, output_folder=output_folder)
 
         extract_tables(options)
-def test_full_combine(capsys):
 
-    from pdfsp import extract_tables
+
+def test_full_combine(capsys):
 
     with capsys.disabled():
         source_folder = "."
         output_folder = "output_t"
-        options = Options(source_folder=source_folder, output_folder=output_folder , combine=True)
+        options = Options(
+            source_folder=source_folder, output_folder=output_folder, combine=True
+        )
 
         extract_tables(options)

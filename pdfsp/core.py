@@ -16,9 +16,8 @@
 #
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
+# ................................................................
 import pdfplumber
-from dataclasses import dataclass
-import os
 import pandas as pd
 
 from ._typing import (
@@ -26,108 +25,14 @@ from ._typing import (
     T_OptionalPath,
     Generator,
     Path,
-    T_pandas_df,
-    T_List_path,
-    T_List_str,
     Dict,
 )
-
-from collections import Counter
+from typing import List
+# ................................................................
 from ._options import Options
-
-from pathlib import Path
-from urllib.parse import urlparse
-
-SAMPLE_PDF_file_name = "sample_download_pdfsp.pdf"
-
-
-def is_url(path_or_url):
-    if isinstance(path_or_url, list):
-        path_or_url = path_or_url[0]
-    parsed = urlparse(str(path_or_url))
-    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
-
-
-def get_pdf_from_url(url, proxies=None):
-    raise NotImplementedError("This function is not implemented yet.")
-    import requests
-
-    file_name = SAMPLE_PDF_file_name
-    response = requests.get(url, proxies=proxies)
-
-    if response.status_code == 200:
-        with open(file_name, "wb") as f:
-            f.write(response.content)
-        print(f"{file_name} downloaded successfully!")
-    else:
-        print(f"Failed to download file. Status code: {response.status_code}")
-
-
-@dataclass
-class DataFrame:
-    df: T_pandas_df
-    path: T_Path
-    out: T_OptionalPath = None
-    page: int = 1
-    index: int = 1
-    extra: tuple = ()
-    name: str = ""
-
-    def __post_init__(self):
-        if self.out is None:
-            self.out = "Output"
-        self.out = Path(self.out)
-        self.df = self.make_unique_cols(self.df)
-        self.name = Path(self.path).stem.split(".pdf")[0]
-
-    def make_unique_cols(self, df: T_pandas_df) -> T_pandas_df:
-        cols = [str(x) for x in df.columns]
-        df.columns = self.make_unique(cols)
-        return df
-
-    def make_unique(self, cols: T_List_str) -> T_List_str:
-        counter = Counter()
-        unique_cols = []
-        for col in cols:
-            counter[col] += 1
-            suffix = f"-{counter[col]-1}" if counter[col] > 1 else ""
-            unique_cols.append(f"{col}{suffix}")
-        return unique_cols
-
-    def get_file_name(self) -> str:
-        return f"[{self.name}]-Page {self.page}-T {self.index}.xlsx"
-
-    def create_dir(self) -> None:
-        os.makedirs(self.out, exist_ok=True)
-
-    def write(self) -> None:
-        from openpyxl import Workbook
-        from openpyxl.utils.dataframe import dataframe_to_rows
-
-        self.create_dir()
-        file_name = self.get_file_name()
-        wb = Workbook()
-        ws = wb.active
-        title = f"{self.name}-Table-{self.index}"
-        ws.title = title
-        for r_idx, row in enumerate(
-            dataframe_to_rows(self.df, index=False, header=True), start=1
-        ):
-            ws.append(row)
-        footnote_row = len(self.df) + 4
-        ws.cell(row=footnote_row, column=1, value=f"Footnote: {title} ")
-        paragraph_row = footnote_row + 4
-        ws.cell(
-            row=paragraph_row,
-            column=1,
-            value=f"This table was extracted from {self.path} with pdfsp package.",
-        )
-        wb.save(self.out / file_name)
-        print(f"[writing table] {file_name}")
-
-
-
-
+from ._dataframe import DataFrame
+from ._utils import print_summary_report
+# ................................................................
 
 def extract_tables_from_pdf(
     pdf_path: T_Path, options: Options
@@ -153,9 +58,6 @@ def extract_tables_from_pdf(
         print(f"❌ Failed to extract tables from `{pdf_path}`: {e}")
 
 
-from typing import List
-
-
 def _strip_repeated_header(df: pd.DataFrame) -> pd.DataFrame:
     """Remove the first row if it repeats the header (common in continuation pages)."""
     if df.empty:
@@ -168,9 +70,6 @@ def _strip_repeated_header(df: pd.DataFrame) -> pd.DataFrame:
     if header_as_list == first_row:
         return df.iloc[1:].reset_index(drop=True)
     return df
-
-
-from typing import List
 
 
 def combine_tables_by_continuation(dfs: List[DataFrame]) -> List[pd.DataFrame]:
@@ -227,7 +126,7 @@ def process_folder_combine(options: Options) -> Dict[str, Dict[str, int]]:
     Process all PDF files in a folder and return a report of successes,
     failures, and the number of combined tables extracted per file.
     """
-    report = {"success": {}, "failed": []}   
+    report = {"success": {}, "failed": []}
 
     for file in options.source_folder:
         dfs = []
@@ -252,23 +151,8 @@ def process_folder_combine(options: Options) -> Dict[str, Dict[str, int]]:
     return report
 
 
-def check_if_url_and_download(options: Options):
-    """Check if the source folder is a URL and download the PDF file."""
-    # if str(options.source_folder).startswith("http"):
-    if is_url(options.source_folder_raw):
-        print(f"Downloading PDF from `{options.source_folder_raw}`")
-        get_pdf_from_url(options.source_folder_raw)
-        options.source_folder = Path("sample_download_pdfsp.pdf")
-        print(f"Downloaded PDF saved as `{options.source_folder}`")
-
-
 def process_folder(options: Options) -> Dict[str, Dict[str, int]]:
     """Process all PDF files in a folder and return a report of successes, failures, and extracted table counts."""
-
-    # check_if_url_and_download(options)
-
-    print(options)
-    # exit()
 
     if options.combine:
         return process_folder_combine(options)
@@ -293,25 +177,7 @@ def process_folder(options: Options) -> Dict[str, Dict[str, int]]:
     return report
 
 
-def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
-    """Print a summary report including how many tables were extracted per file."""
-    print("\n=== 📊 Extraction Summary Report ===")
 
-    success_files = report["success"]
-    failed_files = report["failed"]
-
-    print(f"✅ Successful Files: {len(success_files)}")
-    for file, count in success_files.items():
-        print(f"   - {file} → 🗂️ {count} tables extracted")
-
-    print(f"\n❌ Failed Files: {len(failed_files)}")
-    for f in failed_files:
-        print(f"   - {f}")
-
-    if not failed_files:
-        print("\n🎉 All files processed successfully!")
-    else:
-        print("\n⚠️ Some files failed to process. See details above.")
 
 
 def extract_tables(options: Options) -> None:
