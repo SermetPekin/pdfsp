@@ -54,12 +54,11 @@ extract_tables(options)
 # Extract all tables from all PDF files in the current folder and save them to the current folder
 pdfsp . .
 
-# Extract and COMBINE big tables (spanning multiple pages) into single files, saved to the current folder
+# Extract and COMBINE large tables (spanning multiple pages) into single files, saved to the current folder
 pdfsp . . --combine
 
-
-pdfsp . --combine --skiprows=1
-
+# Extract and COMBINE tables, skipping the first row of each table (e.g., header rows)
+pdfsp . . --combine --skiprows=1
 
 # Extract all tables from PDF files in 'someFolder' and save them to 'SomeOutFolder'
 pdfsp someFolder SomeOutFolder
@@ -69,6 +68,7 @@ pdfsp some.pdf .
 
 # Extract all tables from 'some.pdf' and save them to 'toThisFolder'
 pdfsp some.pdf toThisFolder
+
 
 
 ```
