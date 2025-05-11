@@ -18,3 +18,8 @@ output/
 *.csv
 *.json
 
+output/
+output_t/
+*.xlsx
+*.csv
+*.json

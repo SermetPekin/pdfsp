@@ -21,22 +21,36 @@
 
 from pdfsp.core import extract_tables
 import sys
-from ._typing import T_OptionalPath,Path 
-from ._options import Options  
+from ._typing import T_OptionalPath, Path
+from ._options import Options
 
 
+from pathlib import Path
+from urllib.parse import urlparse
 
-
+def is_url(path_or_url):
+    parsed = urlparse(str(path_or_url))
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
 def console_extract_tables():
     """Entry point for command-line interface."""
-    args = sys.argv[1:]   
+    args = sys.argv[1:]
     combine = False
+    skiprows = 0
 
     if "--combine" in args:
         combine = True
-        args.remove("--combine") 
+        args.remove("--combine")
+
+    for arg in args:
+        if arg.startswith("--skiprows="):
+            try:
+                skiprows = int(arg.split("=")[1])
+                args.remove(arg)
+            except ValueError:
+                print("Invalid value for --skiprows. It must be an integer.")
+                return
 
     if len(args) >= 2:
         source = args[0]
@@ -48,5 +62,15 @@ def console_extract_tables():
         source = "."
         output = None
 
-    options = Options(source_folder=source, output_folder=output, combine=combine)
+
+    # if is_url(source):
+    #     source = Path(source)
+
+    options = Options(
+        source_folder=source, 
+        output_folder=output, 
+        combine=combine, 
+        skiprows=skiprows
+        source_folder_raw = source
+    )
     extract_tables(options)

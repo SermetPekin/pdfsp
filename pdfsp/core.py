@@ -35,6 +35,33 @@ from ._typing import (
 from collections import Counter
 from ._options import Options
 
+from pathlib import Path
+from urllib.parse import urlparse
+
+SAMPLE_PDF_file_name = "sample_download_pdfsp.pdf"
+
+
+def is_url(path_or_url):
+    if isinstance(path_or_url, list):
+        path_or_url = path_or_url[0]
+    parsed = urlparse(str(path_or_url))
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def get_pdf_from_url(url, proxies=None):
+    raise NotImplementedError("This function is not implemented yet.")
+    import requests
+
+    file_name = SAMPLE_PDF_file_name
+    response = requests.get(url, proxies=proxies)
+
+    if response.status_code == 200:
+        with open(file_name, "wb") as f:
+            f.write(response.content)
+        print(f"{file_name} downloaded successfully!")
+    else:
+        print(f"Failed to download file. Status code: {response.status_code}")
+
 
 @dataclass
 class DataFrame:
@@ -99,48 +126,11 @@ class DataFrame:
         print(f"[writing table] {file_name}")
 
 
-def check_folder(folder: T_Path) -> bool:
-    """Check if the folder exists and is a directory."""
-    folder = Path(folder)
-    if not folder.exists():
-        print(f"Folder `{folder}` does not exist.")
-        return False
-    if not folder.is_dir():
-        print(f"`{folder}` is not a directory.")
-        return False
-    return True
 
-
-class Folder(object):
-    def __init__(self, folder: T_OptionalPath = None):
-        if folder is None:
-            folder = "."
-        self.folder = Path(folder)
-        if not check_folder(self.folder):
-            raise ValueError(f"Invalid folder: {folder}")
-
-    def __str__(self) -> str:
-        return str(self.folder)
-
-    def __repr__(self) -> str:
-        return f"Folder({self.folder})"
-
-    def __iter__(self):
-        """Iterate over all files in the folder."""
-        for file in self.folder.iterdir():
-            if file.is_file() and file.suffix.lower() == ".pdf":
-                yield file
-            else:
-                ...
-                # print(f"Skipping non-PDF file: {file}")
-
-    def __len__(self) -> int:
-        """Get the number of PDF files in the folder."""
-        return len(list(self.folder.glob("*.pdf")) + list(self.folder.glob("*.PDF")))
 
 
 def extract_tables_from_pdf(
-    pdf_path: T_Path, out: T_OptionalPath = None
+    pdf_path: T_Path, options: Options
 ) -> Generator[DataFrame, None, None]:
     """Extract tables from a PDF file and yield DataFrame objects."""
     try:
@@ -150,8 +140,11 @@ def extract_tables_from_pdf(
                 tables = page.extract_tables()
                 for index, table in enumerate(tables):
                     try:
-                        df = pd.DataFrame(table[1:], columns=table[0])
-                        yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
+                        # df = pd.DataFrame(table[1:], columns=table[0] , skiprows=options.skiprows)
+                        df = pd.DataFrame(table[1:], columns=table[options.skiprows])
+                        yield DataFrame(
+                            df, pdf_path, options.output_folder, page=i, index=index + 1
+                        )
                     except Exception as e:
                         print(
                             f"⚠️ Failed to process table {index + 1} on page {i} of `{pdf_path}`: {e}"
@@ -159,7 +152,9 @@ def extract_tables_from_pdf(
     except Exception as e:
         print(f"❌ Failed to extract tables from `{pdf_path}`: {e}")
 
-from typing import List  
+
+from typing import List
+
 
 def _strip_repeated_header(df: pd.DataFrame) -> pd.DataFrame:
     """Remove the first row if it repeats the header (common in continuation pages)."""
@@ -174,7 +169,9 @@ def _strip_repeated_header(df: pd.DataFrame) -> pd.DataFrame:
         return df.iloc[1:].reset_index(drop=True)
     return df
 
+
 from typing import List
+
 
 def combine_tables_by_continuation(dfs: List[DataFrame]) -> List[pd.DataFrame]:
     """
@@ -196,11 +193,13 @@ def combine_tables_by_continuation(dfs: List[DataFrame]) -> List[pd.DataFrame]:
             current_parts = [_strip_repeated_header(nxt.df)]
 
     # last group
-    combined.append(pd.concat(current_parts, ignore_index=True  ))
+    combined.append(pd.concat(current_parts, ignore_index=True))
     return combined
 
 
-def write_combined_tables(dfs: List[DataFrame], pdf_path: T_Path, out: T_OptionalPath = None) -> None:
+def write_combined_tables(
+    dfs: List[DataFrame], pdf_path: T_Path, out: T_OptionalPath = None
+) -> None:
     """Write combined tables to separate Excel files."""
     from openpyxl import Workbook
     from openpyxl.utils.dataframe import dataframe_to_rows
@@ -223,19 +222,17 @@ def write_combined_tables(dfs: List[DataFrame], pdf_path: T_Path, out: T_Optiona
         print(f"[writing combined table] {file_name}")
 
 
-
 def process_folder_combine(options: Options) -> Dict[str, Dict[str, int]]:
     """
-    Process all PDF files in a folder and return a report of successes, 
+    Process all PDF files in a folder and return a report of successes,
     failures, and the number of combined tables extracted per file.
     """
-    report = {"success": {}, "failed": []}  # success: filename → table_count
-    _folder = Folder(options.source_folder)
+    report = {"success": {}, "failed": []}   
 
-    for file in _folder:
+    for file in options.source_folder:
         dfs = []
         try:
-            for _df in extract_tables_from_pdf(file, options.output_folder):
+            for _df in extract_tables_from_pdf(file, options):
                 if _df:
                     dfs.append(_df)
         except Exception as e:
@@ -255,17 +252,31 @@ def process_folder_combine(options: Options) -> Dict[str, Dict[str, int]]:
     return report
 
 
+def check_if_url_and_download(options: Options):
+    """Check if the source folder is a URL and download the PDF file."""
+    # if str(options.source_folder).startswith("http"):
+    if is_url(options.source_folder_raw):
+        print(f"Downloading PDF from `{options.source_folder_raw}`")
+        get_pdf_from_url(options.source_folder_raw)
+        options.source_folder = Path("sample_download_pdfsp.pdf")
+        print(f"Downloaded PDF saved as `{options.source_folder}`")
+
 
 def process_folder(options: Options) -> Dict[str, Dict[str, int]]:
     """Process all PDF files in a folder and return a report of successes, failures, and extracted table counts."""
+
+    # check_if_url_and_download(options)
+
+    print(options)
+    # exit()
+
     if options.combine:
         return process_folder_combine(options)
     report = {"success": {}, "failed": []}  # filename: table_count
-    _folder = Folder(options.source_folder)
-    for file in _folder:
+    for file in options.source_folder:
         table_count = 0
         try:
-            for _df in extract_tables_from_pdf(file, options.output_folder):
+            for _df in extract_tables_from_pdf(file, options):
                 if _df:
                     _df.write()
                     table_count += 1

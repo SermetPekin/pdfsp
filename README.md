@@ -57,6 +57,10 @@ pdfsp . .
 # Extract and COMBINE big tables (spanning multiple pages) into single files, saved to the current folder
 pdfsp . . --combine
 
+
+pdfsp . --combine --skiprows=1
+
+
 # Extract all tables from PDF files in 'someFolder' and save them to 'SomeOutFolder'
 pdfsp someFolder SomeOutFolder
 
