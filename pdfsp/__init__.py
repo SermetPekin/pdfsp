@@ -1,6 +1,5 @@
-
 # This file is part of the pdfsp project
-# Copyright (C) 2025 Sermet Pekin 
+# Copyright (C) 2025 Sermet Pekin
 #
 # This source code is free software; you can redistribute it and/or
 # modify it under the terms of the European Union Public License
@@ -17,7 +16,8 @@
 #
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
-from .core import extract_tables , extract_tables_from_pdf
+from .core import extract_tables, extract_tables_from_pdf
+
 __all__ = [
     "extract_tables",
     "extract_tables_from_pdf",

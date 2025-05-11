@@ -29,8 +29,8 @@ from ._typing import (
     T_pandas_df,
     T_List_path,
     T_List_str,
+    Dict,
 )
-from typing import Dict, List
 
 from collections import Counter
 
@@ -110,87 +110,97 @@ def check_folder(folder: T_Path) -> bool:
     return True
 
 
-def get_pdf_files(folder: T_OptionalPath = None) -> T_List_path:
-    """Get all PDF files in the specified folder."""
-    if folder is None:
-        folder = Path(".")
+class Folder(object):
+    def __init__(self, folder: T_OptionalPath = None):
+        if folder is None:
+            folder = "."
+        self.folder = Path(folder)
+        if not check_folder(self.folder):
+            raise ValueError(f"Invalid folder: {folder}")
 
-    if not check_folder(folder):
-        return []
+    def __str__(self) -> str:
+        return str(self.folder)
+    def __repr__(self) -> str:
+        return f"Folder({self.folder})"
+    def __iter__(self):
+        """Iterate over all files in the folder."""
+        for file in self.folder.iterdir():
+            if file.is_file() and file.suffix.lower() == ".pdf":
+                yield file
+            else:
+                print(f"Skipping non-PDF file: {file}")
+    def __len__(self) -> int:
+        """Get the number of PDF files in the folder."""
+        return len(list(self.folder.glob("*.pdf")) + list(self.folder.glob("*.PDF")))
 
-    print(f"Searching for PDF files in `{folder}`")
-    folder=Path(folder)
-    files = list(folder.glob("*.pdf")) + list(folder.glob("*.PDF"))
-    if not files:
-        print(f"No PDF files found in `{folder}`")
-        return []
-    print(f"Found {len(files)} PDF files in `{folder}`")
-    return files
-
-
-
-
-
-def print_summary_report(report: Dict[str, List[str]]) -> None:
-    """Print a summary report of successes and failures."""
-    print("\n=== Extraction Summary Report ===")
-    print(f"✅ Successful Files: {len(report['success'])}")
-    for f in report["success"]:
-        print(f"   - {f}")
-
-    print(f"\n❌ Failed Files: {len(report['failed'])}")
-    for f in report["failed"]:
-        print(f"   - {f}")
-
-    if not report["failed"]:
-        print("\n🎉 All files processed successfully!")
-    else:
-        print("\n⚠️ Some files failed to process. See details above.")
 
 def extract_tables_from_pdf(
-    pdf_path, out: T_OptionalPath = None
+    pdf_path: T_Path, out: T_OptionalPath = None
 ) -> Generator[DataFrame, None, None]:
-    """Extract tables from a PDF file."""
+    """Extract tables from a PDF file and yield DataFrame objects."""
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            print(f"""Extracting tables from `{pdf_path}`""")
+            print(f"Extracting tables from `{pdf_path}`")
             for i, page in enumerate(pdf.pages, start=1):
                 tables = page.extract_tables()
                 for index, table in enumerate(tables):
-                    df = pd.DataFrame(table[1:], columns=table[0])
-                    yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
+                    try:
+                        df = pd.DataFrame(table[1:], columns=table[0])
+                        yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
+                    except Exception as e:
+                        print(
+                            f"⚠️ Failed to process table {index + 1} on page {i} of `{pdf_path}`: {e}"
+                        )
     except Exception as e:
-        print(f"Error extracting tables from `{pdf_path}`: {e}")
-        return None
-def process_folder(folder: T_OptionalPath = None, out: T_OptionalPath = None) -> Dict[str, List[str]]:
-    """Process all PDF files in a folder and return a report of successes and failures."""
-    report = {"success": [], "failed": []}
+        print(f"❌ Failed to extract tables from `{pdf_path}`: {e}")
 
-    for file in get_pdf_files(folder):
+
+def process_folder(
+    folder: T_OptionalPath = None, 
+    out: T_OptionalPath = None
+) -> Dict[str, Dict[str, int]]:
+    """Process all PDF files in a folder and return a report of successes, failures, and extracted table counts."""
+    report = {"success": {}, "failed": []}  # filename: table_count
+    _folder = Folder(folder)
+    for file in _folder : 
+        table_count = 0
         try:
             for _df in extract_tables_from_pdf(file, out):
-                if _df is None:
-                    print(f"Error extracting tables from `{file}`")
-                    report["failed"].append(str(file))
-                    continue
-                _df.write()
-            report["success"].append(str(file))
+                if _df:
+                    _df.write()
+                    table_count += 1
+            if table_count > 0:
+                report["success"][str(file)] = table_count
+            else:
+                print(f"⚠️ No tables found in `{file}`")
+                report["failed"].append(str(file))
         except Exception as e:
+            print(f"❌ Error processing `{file}`: {e}")
             report["failed"].append(str(file))
 
     print_summary_report(report)
     return report
 
 
-# def process_folder(folder: T_OptionalPath = None, out: T_OptionalPath = None):
-#     for file in get_pdf_files(folder):
-#         for _df in extract_tables_from_pdf(file, out):
+def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
+    """Print a summary report including how many tables were extracted per file."""
+    print("\n=== 📊 Extraction Summary Report ===")
 
-#             if _df is None:
-#                 print(f"Error extracting tables from `{file}`")
-#                 continue
-#             _df.write()
-#     print("Extraction completed.")
+    success_files = report["success"]
+    failed_files = report["failed"]
+
+    print(f"✅ Successful Files: {len(success_files)}")
+    for file, count in success_files.items():
+        print(f"   - {file} → 🗂️ {count} tables extracted")
+
+    print(f"\n❌ Failed Files: {len(failed_files)}")
+    for f in failed_files:
+        print(f"   - {f}")
+
+    if not failed_files:
+        print("\n🎉 All files processed successfully!")
+    else:
+        print("\n⚠️ Some files failed to process. See details above.")
 
 
 def extract_tables(folder: T_OptionalPath = None, out: T_OptionalPath = None):

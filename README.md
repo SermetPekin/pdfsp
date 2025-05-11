@@ -55,4 +55,19 @@ pdfsp some.pdf toThisFolder
 
 ```
 
+```plaintext
+=== 📊 Extraction Summary Report ===
+✅ Successful Files: 3
+   - pdfs/report1.pdf → 🗂️ 5 tables extracted
+   - pdfs/summary2.pdf → 🗂️ 3 tables extracted
+   - pdfs/report2.pdf → 🗂️ 7 tables extracted
+
+❌ Failed Files: 1
+   - pdfs/corrupted.pdf
+
+⚠️ Some files failed to process. See details above.
+
+
+```
+
 

@@ -1,6 +1,5 @@
-
 # This file is part of the pdfsp project
-# Copyright (C) 2025 Sermet Pekin 
+# Copyright (C) 2025 Sermet Pekin
 #
 # This source code is free software; you can redistribute it and/or
 # modify it under the terms of the European Union Public License
@@ -18,18 +17,21 @@
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
 from pdfsp import extract_tables
-def test_main():
-    assert True  # Placeholder for actual test logic
+
+
+
+
 def test_m():
     source_folder = "."
     output_folder = "output_t"
-    extract_tables(source_folder, output_folder) 
+    extract_tables(source_folder, output_folder)
 
 
-def test_full():
+def test_full(capsys):
 
     from pdfsp import extract_tables
-    source_folder = "."
-    output_folder = "ignore_output"
-    extract_tables(source_folder, output_folder)
+    with capsys.disabled():
+        source_folder = "."
+        output_folder = "output_t"
+        extract_tables(source_folder, output_folder)
 

@@ -25,8 +25,7 @@ from ._typing import T_OptionalPath
 
 
 def console_router(
-    source_folder: T_OptionalPath = None, 
-    output_folder: T_OptionalPath = None
+    source_folder: T_OptionalPath = None, output_folder: T_OptionalPath = None
 ):
     """Console router"""
 
