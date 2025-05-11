@@ -18,10 +18,18 @@
 # version of the EUPL published by the European Commission.
 import pdfplumber
 from dataclasses import dataclass
-import traceback
 import os
+import pandas as pd
 
-from ._typing import T_Path, T_OptionalPath, Generator, Path, T_pandas_df,List 
+from ._typing import (
+    T_Path,
+    T_OptionalPath,
+    Generator,
+    Path,
+    T_pandas_df,
+    T_List_path,
+    T_List_str,
+)
 
 
 @dataclass
@@ -46,7 +54,7 @@ class DataFrame:
         df.columns = self.make_unique(cols)
         return df
 
-    def make_unique(self, cols: List[str]) -> List[str]:
+    def make_unique(self, cols: T_List_str) -> T_List_str:
         a = []
         b = []
         for i, col in enumerate(cols):
@@ -102,7 +110,7 @@ def check_folder(folder: T_Path) -> bool:
     return True
 
 
-def get_pdf_files(folder: T_OptionalPath = None) -> List[str]:
+def get_pdf_files(folder: T_OptionalPath = None) -> T_List_path:
     """Get all PDF files in the specified folder."""
     if folder is None:
         folder = Path(".")
@@ -119,23 +127,31 @@ def get_pdf_files(folder: T_OptionalPath = None) -> List[str]:
     print(f"Found {len(files)} PDF files in `{folder}`")
     return files
 
-import pandas as pd 
 
-def extract_tables_from_pdf(pdf_path, out :T_OptionalPath= None) -> Generator[DataFrame, None, None]:
+def extract_tables_from_pdf(
+    pdf_path, out: T_OptionalPath = None
+) -> Generator[DataFrame, None, None]:
     """Extract tables from a PDF file."""
-
-    with pdfplumber.open(pdf_path) as pdf:
-        print(f"""Extracting tables from `{pdf_path}`""")
-        for i, page in enumerate(pdf.pages, start=1):
-            tables = page.extract_tables()
-            for index, table in enumerate(tables):
-                df = pd.DataFrame(table[1:], columns=table[0])
-                yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            print(f"""Extracting tables from `{pdf_path}`""")
+            for i, page in enumerate(pdf.pages, start=1):
+                tables = page.extract_tables()
+                for index, table in enumerate(tables):
+                    df = pd.DataFrame(table[1:], columns=table[0])
+                    yield DataFrame(df, pdf_path, out, page=i, index=index + 1)
+    except Exception as e:
+        print(f"Error extracting tables from `{pdf_path}`: {e}")
+        return None
 
 
 def process_folder(folder: T_OptionalPath = None, out: T_OptionalPath = None):
     for file in get_pdf_files(folder):
         for _df in extract_tables_from_pdf(file, out):
+
+            if _df is None:
+                print(f"Error extracting tables from `{file}`")
+                continue
             _df.write()
     print("Extraction completed.")
 

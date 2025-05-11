@@ -1,6 +1,5 @@
-from typing import Callable, Optional, Union,List 
+from typing import Callable, Optional, Union ,List,Tuple, Generator
 from pathlib import Path 
-from typing import Generator
 import pandas as pd
 
 T_pandas_df = pd.DataFrame
@@ -20,3 +19,7 @@ T_OptionalAny = Optional[any]
 T_OptionalBytes = Optional[bytes]
 T_OptionalSet = Optional[set]
 T_callable = Callable
+
+T_List_str = List[str]
+T_List_path = List[Path]
+T_Tuple_str = Tuple[str]

@@ -19,9 +19,9 @@
 # pdfsp/cli.py
 
 
-from pdfsp.core import extract_tables, write_dfs
+from pdfsp.core import extract_tables
 import sys
-from ._typing import T_Path, T_OptionalPath
+from ._typing import T_OptionalPath
 
 
 def console_router(
