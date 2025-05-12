@@ -158,3 +158,5 @@ class Options:
 
             self._type == "folder"
             self.source_folder = SourceFolder(self.source_folder)
+
+
