@@ -37,7 +37,7 @@ jobs:
           pip install uv  
           uv venv
           .venv\Scripts\activate
-
+          uv pip install . 
       - name: Run tests
         run: |
           pytest -v
