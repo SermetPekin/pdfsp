@@ -20,7 +20,6 @@ from urllib.parse import urlparse
 
 # ................................................................
 from ._typing import Path, T_Path
-from ._globals import SAMPLE_PDF_file_name
 from ._typing import (
     T_Path,
     T_OptionalPath,
