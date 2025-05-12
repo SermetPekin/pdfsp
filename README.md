@@ -1,3 +1,9 @@
+[![Pypi Windows Server](https://github.com/SermetPekin/pdfsp/actions/workflows/test-windows.yml/badge.svg)](https://github.com/SermetPekin/pdfsp/actions/workflows/test-windows.yml)
+[![Pypi Ubuntu Server](https://github.com/SermetPekin/pdfsp/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/SermetPekin/pdfsp/actions/workflows/test-ubuntu.yml)
+
+[![PyPI](https://img.shields.io/pypi/v/pdfsp)](https://img.shields.io/pypi/v/pdfsp) ![PyPI Downloads](https://static.pepy.tech/badge/pdfsp?2)![t](https://img.shields.io/badge/status-maintained-yellow.svg)   [![](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) 
+
+
 # 📄 pdfsp
 ---
 
