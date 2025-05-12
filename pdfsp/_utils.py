@@ -33,7 +33,7 @@ from ._typing import (
 # ................................................................
 def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
     """Print a summary report including how many tables were extracted per file."""
-    print("\n=== 📊 Extraction Summary Report ===")
+    print("\n=== Extraction Summary Report ===")
 
     success_files = report["success"]
     failed_files = report["failed"]
