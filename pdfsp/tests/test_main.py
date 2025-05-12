@@ -17,13 +17,16 @@
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
 from pdfsp import extract_tables, Options
-
+from pdfsp.cli import console_extract_tables_helper
+import pytest
+SAMPLE_URL = "https://sample-files.com/downloads/documents/pdf/sample-report.pdf"
+OUTPUT_FOLDER = "ignore_output"
 
 def test_full(capsys):
 
     with capsys.disabled():
         source_folder = "."
-        output_folder = "output_t"
+        output_folder = OUTPUT_FOLDER
         options = Options(source_folder=source_folder, output_folder=output_folder)
 
         extract_tables(options)
@@ -32,23 +35,40 @@ def test_full(capsys):
 def test_full_combine(capsys):
 
     with capsys.disabled():
-        source_folder = "."
-        output_folder = "output_t"
+        source_folder = None
+        output_folder = None  
         options = Options(
             source_folder=source_folder, output_folder=output_folder, combine=True
         )
 
         extract_tables(options)
 
-
 def test_full_skiprows(capsys):
 
     from pdfsp import extract_tables , Options 
     with capsys.disabled():
         
-        URL = 'https://sample-files.com/downloads/documents/pdf/sample-report.pdf'
-        output_folder = "ignore_output"
+        output_folder = OUTPUT_FOLDER 
         combine = False 
         skiprows = 0 
-        options = Options(source_folder=URL, output_folder=output_folder , combine=combine , skiprows=skiprows)
+        options = Options(source_folder=SAMPLE_URL, output_folder=output_folder , combine=combine , skiprows=skiprows)
         extract_tables(options)
+
+def test_cli():
+    console_extract_tables_helper(
+        [
+            "--combine",
+            "--skiprows=0",
+            SAMPLE_URL , 
+            OUTPUT_FOLDER ,
+        ]
+    )
+
+def test_cli2():
+    console_extract_tables_helper(
+        [
+
+            SAMPLE_URL , 
+           OUTPUT_FOLDER ,
+        ]
+    )

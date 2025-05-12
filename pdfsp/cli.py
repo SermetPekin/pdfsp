@@ -24,9 +24,13 @@ import sys
 from ._options import Options
 
 
+
 def console_extract_tables():
-    """Entry point for command-line interface."""
     args = sys.argv[1:]
+    return console_extract_tables_helper(args)
+
+def console_extract_tables_helper(args):
+    """Entry point for command-line interface."""
     combine = False
     skiprows = 0
 
