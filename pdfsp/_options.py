@@ -26,7 +26,7 @@ from ._utils import check_folder
 
 # ................................................................
 
-from abc import ABC  , abstractmethod 
+from abc import ABC, abstractmethod
 
 
 class SourceIterable(ABC):
@@ -38,6 +38,7 @@ class SourceIterable(ABC):
     def __len__(self) -> int:
         """Get the number of PDF files in the folder."""
         ...
+
 
 @dataclass
 class SourceFolder(SourceIterable):
@@ -75,42 +76,42 @@ class PdfFile(SourceIterable):
     def __init__(self, file_name: Path):
         self.file_name = Path(file_name)
 
-
     def __repr__(self) -> str:
         return f"PdfFile({self.file_name})"
 
     def __iter__(self):
         """Iterate over all files in the folder."""
-        yield from  [self.file_name]
+        yield from [self.file_name]
 
     def __str__(self) -> str:
         return str(self.file_name)
 
 
-
-
 class PdfFileUrl(PdfFile):
-    def __init__(self, url: str = None ,    test = False  ):
+    def __init__(self, url: str = None, test=False):
         self.url = url
-        self.file_name = self.get_file_name() 
+        self.file_name = self.get_file_name()
 
-        if test :
-            return 
+        if test:
+            return
         self._download()
+
     def __repr__(self) -> str:
         return f"PdfFileUrl({self.url})"
 
     def __str__(self) -> str:
         return str(self.url)
-    
+
     def get_file_name(self):
-        from urllib.parse import urlparse 
-        return urlparse(self.url).path.split('/')[-1]
-    
+        from urllib.parse import urlparse
+
+        return urlparse(self.url).path.split("/")[-1]
+
     def _download(self):
-        
+
         print(f"Downloading {self.url} to { self.file_name }")
         import requests
+
         response = requests.get(self.url, proxies=None)
         if response.status_code == 200:
             with open(self.file_name, "wb") as f:
@@ -141,37 +142,21 @@ class Options:
             self.output_folder = "Output"
 
         self.source_folder_raw = self.source_folder
-
-        self.source_folder = Path(self.source_folder)
         self.output_folder = Path(self.output_folder)
-        # self.source_folder = self.source_folder.resolve()
-        # self.output_folder = self.output_folder.resolve()
+
         self.output_folder.mkdir(parents=True, exist_ok=True)
         self.combine = True if self.combine else False
 
-        self.source_folder = (
-            [self.source_folder]
-            if isinstance(self.source_folder, str)
-            else self.source_folder
-        )
-        self.output_folder = (
-            [self.output_folder]
-            if isinstance(self.output_folder, str)
-            else self.output_folder
-        )
-
         if str(self.source_folder_raw).startswith("http"):
             self._type = "url"
+            self.source_folder = PdfFileUrl(self.source_folder_raw)
+
         elif str(self.source_folder_raw).endswith(".pdf"):
             self._type = "pdf"
-
-        if self._type == "folder":
-            self.source_folder = SourceFolder(self.source_folder)
-
-        if self._type == "pdf":
             self.source_folder = PdfFile(self.source_folder)
+        else:
 
-        if self._type == "url":
-            self.source_folder = PdfFileUrl(self.source_folder_raw)
+            self._type == "folder"
+            self.source_folder = SourceFolder(self.source_folder)
 
         # print(self)

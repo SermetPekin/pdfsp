@@ -34,10 +34,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install uv  
+          pip install uv pdfsp 
           uv venv
           .venv\Scripts\activate
-          
+
       - name: Run tests
         run: |
           pytest -v
