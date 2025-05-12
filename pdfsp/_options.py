@@ -75,38 +75,31 @@ class PdfFile(SourceIterable):
     def __init__(self, file_name: Path):
         self.file_name = Path(file_name)
 
-    def __str__(self) -> str:
-        return str(self.file_name)
 
     def __repr__(self) -> str:
         return f"PdfFile({self.file_name})"
 
     def __iter__(self):
         """Iterate over all files in the folder."""
-        for file in [self.file_name]:
-            yield file
+        yield from  [self.file_name]
 
-    def __len__(self) -> int:
-        return 1
+    def __str__(self) -> str:
+        return str(self.file_name)
 
 
-class PdfFileUrl(SourceIterable):
-    def __init__(self, url: str = None ,  file_name = 'test_.pdf' , test = False  ):
-        # self.file = PdfFile(SAMPLE_PDF_file_name)
-        self.file_name = file_name 
+
+
+class PdfFileUrl(PdfFile):
+    def __init__(self, url: str = None ,    test = False  ):
         self.url = url
+        self.file_name = self.get_file_name() 
+
         if test :
             return 
         self._download()
+    def __repr__(self) -> str:
+        return f"PdfFileUrl({self.url})"
 
-    def __iter__(self):
-        """Iterate over all files in the folder."""
-        self.file_name = self.get_file_name()
-        for file in [self.file_name ]:
-            yield file
-
-    def __len__(self) -> int:
-        return 1
     def __str__(self) -> str:
         return str(self.url)
     
@@ -115,7 +108,6 @@ class PdfFileUrl(SourceIterable):
         return urlparse(self.url).path.split('/')[-1]
     
     def _download(self):
-        self.file_name = self.get_file_name()
         
         print(f"Downloading {self.url} to { self.file_name }")
         import requests
