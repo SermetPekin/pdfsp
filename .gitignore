@@ -23,3 +23,5 @@ output_t/
 *.xlsx
 *.csv
 *.json
+*.pdf
+!example.pdf
