@@ -28,11 +28,14 @@ from ._typing import (
     Dict,
 )
 from typing import List
+
 # ................................................................
 from ._options import Options
 from ._dataframe import DataFrame
 from ._utils import print_summary_report
+
 # ................................................................
+
 
 def extract_tables_from_pdf(
     pdf_path: T_Path, options: Options
@@ -175,9 +178,6 @@ def process_folder(options: Options) -> Dict[str, Dict[str, int]]:
 
     print_summary_report(report)
     return report
-
-
-
 
 
 def extract_tables(options: Options) -> None:

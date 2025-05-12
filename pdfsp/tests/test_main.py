@@ -39,3 +39,16 @@ def test_full_combine(capsys):
         )
 
         extract_tables(options)
+
+
+def test_full_skiprows(capsys):
+
+    from pdfsp import extract_tables , Options 
+    with capsys.disabled():
+        
+        URL = 'https://sample-files.com/downloads/documents/pdf/sample-report.pdf'
+        output_folder = "ignore_output"
+        combine = False 
+        skiprows = 0 
+        options = Options(source_folder=URL, output_folder=output_folder , combine=combine , skiprows=skiprows)
+        extract_tables(options)

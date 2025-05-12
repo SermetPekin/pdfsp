@@ -17,7 +17,7 @@
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
 
-from typing import Callable, Optional, Union, List, Tuple , Generator, Dict
+from typing import Callable, Optional, Union, List, Tuple, Generator, Dict
 from pathlib import Path
 import pandas as pd
 

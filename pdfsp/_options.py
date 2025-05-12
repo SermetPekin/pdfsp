@@ -1,4 +1,3 @@
-
 # This file is part of the pdfsp project
 # Copyright (C) 2025 Sermet Pekin
 #
@@ -18,33 +17,27 @@
 # Alternatively, if agreed upon, you may use this code under any later
 # version of the EUPL published by the European Commission.
 # from dataclasses import dataclass
+from dataclasses import dataclass
 
 # ................................................................
 from ._typing import T_OptionalPath, Path
 from ._globals import SAMPLE_PDF_file_name
 from ._utils import is_url
+from ._utils import check_folder
 
 # ................................................................
-from dataclasses import dataclass
+
 
 @dataclass
 class SourceFolder(object):
     """Source folder for PDF files."""
 
     def __init__(self, folder: T_OptionalPath = None):
-
         if folder is None:
             folder = "."
-        if isinstance(folder, str):
-            if is_url(folder):
-                folder = Path(SAMPLE_PDF_file_name)
-                self.pdf_file = True
-            else:
-                print(f"Folder `{folder}` is not a valid URL.")
-                # exit()
         self.folder = Path(folder)
-        # if not check_folder(self.folder):
-        #     raise ValueError(f"Invalid folder: {folder}")
+        if not check_folder(self.folder):
+            raise ValueError(f"Invalid folder: {folder}")
 
     def __str__(self) -> str:
         return str(self.folder)
@@ -61,6 +54,7 @@ class SourceFolder(object):
 
     def __len__(self) -> int:
         """Get the number of PDF files in the folder."""
+
         return len(list(self.folder.glob("*.pdf")) + list(self.folder.glob("*.PDF")))
 
 
@@ -93,7 +87,7 @@ class PdfFileUrl(object):
 
     def __iter__(self):
         """Iterate over all files in the folder."""
-        for file in [self.file]:
+        for file in [self.file.file]:
             yield file
 
     def __len__(self) -> int:
@@ -106,9 +100,9 @@ class PdfFileUrl(object):
 
         response = requests.get(self.url, proxies=None)
         if response.status_code == 200:
-            with open(self.file_name, "wb") as f:
+            with open(self.file.file, "wb") as f:
                 f.write(response.content)
-            print(f"{self.file_name} downloaded successfully!")
+            print(f"{self.file.file} downloaded successfully!")
         else:
             print(f"Failed to download file. Status code: {response.status_code}")
 
@@ -158,8 +152,6 @@ class Options:
         elif str(self.source_folder_raw).endswith(".pdf"):
             self._type = "pdf"
 
-
-
         if self._type == "folder":
             self.source_folder = SourceFolder(self.source_folder)
 
@@ -169,4 +161,4 @@ class Options:
         if self._type == "url":
             self.source_folder = PdfFileUrl(self.source_folder_raw)
 
-        print(self)
+        # print(self)

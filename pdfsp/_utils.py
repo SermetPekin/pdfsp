@@ -28,6 +28,8 @@ from ._typing import (
     Path,
     Dict,
 )
+
+
 # ................................................................
 def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
     """Print a summary report including how many tables were extracted per file."""
@@ -48,6 +50,7 @@ def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
         print("\n🎉 All files processed successfully!")
     else:
         print("\n⚠️ Some files failed to process. See details above.")
+
 
 def get_pdf_from_url(url, proxies=None):
     # raise NotImplementedError("This function is not implemented yet.")
