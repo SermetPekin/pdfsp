@@ -1,4 +1,4 @@
-name: Pypi Windows Server
+name: Pypi Windows PYPI
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
           pip install uv  
           uv venv
           .venv\Scripts\activate
-          
+
       - name: Run tests
         run: |
           pytest -v
