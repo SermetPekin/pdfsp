@@ -21,15 +21,26 @@ from dataclasses import dataclass
 
 # ................................................................
 from ._typing import T_OptionalPath, Path
-from ._globals import SAMPLE_PDF_file_name
 from ._utils import is_url
 from ._utils import check_folder
 
 # ................................................................
 
+from abc import ABC  , abstractmethod 
+
+
+class SourceIterable(ABC):
+    @abstractmethod
+    def __iter__(self):
+        """Iterate over all files in the folder."""
+        ...
+
+    def __len__(self) -> int:
+        """Get the number of PDF files in the folder."""
+        ...
 
 @dataclass
-class SourceFolder(object):
+class SourceFolder(SourceIterable):
     """Source folder for PDF files."""
 
     def __init__(self, folder: T_OptionalPath = None):
@@ -58,51 +69,61 @@ class SourceFolder(object):
         return len(list(self.folder.glob("*.pdf")) + list(self.folder.glob("*.PDF")))
 
 
-class PdfFile(object):
+class PdfFile(SourceIterable):
     """PDF file object."""
 
-    def __init__(self, file: Path):
-        self.file = Path(file)
+    def __init__(self, file_name: Path):
+        self.file_name = Path(file_name)
 
     def __str__(self) -> str:
-        return str(self.file)
+        return str(self.file_name)
 
     def __repr__(self) -> str:
-        return f"PdfFile({self.file})"
+        return f"PdfFile({self.file_name})"
 
     def __iter__(self):
         """Iterate over all files in the folder."""
-        for file in [self.file]:
+        for file in [self.file_name]:
             yield file
 
     def __len__(self) -> int:
         return 1
 
 
-class PdfFileUrl(object):
-    def __init__(self, url: str = None):
-        self.file = PdfFile(SAMPLE_PDF_file_name)
+class PdfFileUrl(SourceIterable):
+    def __init__(self, url: str = None ,  file_name = 'test_.pdf' , test = False  ):
+        # self.file = PdfFile(SAMPLE_PDF_file_name)
+        self.file_name = file_name 
         self.url = url
+        if test :
+            return 
         self._download()
 
     def __iter__(self):
         """Iterate over all files in the folder."""
-        for file in [self.file.file]:
+        self.file_name = self.get_file_name()
+        for file in [self.file_name ]:
             yield file
 
     def __len__(self) -> int:
         return 1
-
+    def __str__(self) -> str:
+        return str(self.url)
+    
+    def get_file_name(self):
+        from urllib.parse import urlparse 
+        return urlparse(self.url).path.split('/')[-1]
+    
     def _download(self):
-        print(f"Downloading {self.url} to {self.file.file }")
-
+        self.file_name = self.get_file_name()
+        
+        print(f"Downloading {self.url} to { self.file_name }")
         import requests
-
         response = requests.get(self.url, proxies=None)
         if response.status_code == 200:
-            with open(self.file.file, "wb") as f:
+            with open(self.file_name, "wb") as f:
                 f.write(response.content)
-            print(f"{self.file.file} downloaded successfully!")
+            print(f"{self.file_name} downloaded successfully!")
         else:
             print(f"Failed to download file. Status code: {response.status_code}")
 
