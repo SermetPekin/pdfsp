@@ -31,25 +31,50 @@ from ._typing import (
 
 
 # ................................................................
+import sys
+from typing import Dict
+
 def print_summary_report(report: Dict[str, Dict[str, int]]) -> None:
     """Print a summary report including how many tables were extracted per file."""
+    # Determine if Unicode characters are supported
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        symbols = {
+            "success": "✅",
+            "table": "🗂️",
+            "fail": "❌",
+            "all_done": "🎉",
+            "warning": "⚠️",
+            "arrow": "→"
+        }
+    except (AttributeError, LookupError):
+        symbols = {
+            "success": "[OK]",
+            "table": "[TABLE]",
+            "fail": "[FAIL]",
+            "all_done": "[ALL DONE]",
+            "warning": "[WARNING]",
+            "arrow": "->"
+        }
+
     print("\n=== Extraction Summary Report ===")
 
     success_files = report["success"]
     failed_files = report["failed"]
 
-    print(f"✅ Successful Files: {len(success_files)}")
+    print(f"{symbols['success']} Successful Files: {len(success_files)}")
     for file, count in success_files.items():
-        print(f"   - {file} → 🗂️ {count} tables extracted")
+        print(f"   - {file} {symbols['arrow']} {symbols['table']} {count} tables extracted")
 
-    print(f"\n❌ Failed Files: {len(failed_files)}")
+    print(f"\n{symbols['fail']} Failed Files: {len(failed_files)}")
     for f in failed_files:
         print(f"   - {f}")
 
     if not failed_files:
-        print("\n🎉 All files processed successfully!")
+        print(f"\n{symbols['all_done']} All files processed successfully!")
     else:
-        print("\n⚠️ Some files failed to process. See details above.")
+        print(f"\n{symbols['warning']} Some files failed to process. See details above.")
+
 
 
 def get_pdf_from_url(url, proxies=None):
