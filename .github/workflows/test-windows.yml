@@ -36,7 +36,7 @@ jobs:
           pip install uv  pdfplumber pandas
           uv venv
           .venv\Scripts\activate
-          uv pip install pdfplumber pandas flake8 pytest
+          uv pip install pdfplumber pandas flake8 pytest requests 
           # uv pip install -r requirements.txt
 
           # uv pip install openpyxl>=3.1.5 pandas>=2.2.3 pdfplumber>=0.11.6 requests>=2.32.3
